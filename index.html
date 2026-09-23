@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviation Component Maintenance Record System (QR-MRS)</title>
+<!-- QR Code Generation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- HTML5 QR Code Scanner Library -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<style>
+  :root {
+    --navy: #0f2233;
+    --navy-2: #16324a;
+    --steel: #3a5a78;
+    --steel-light: #f0f4f8;
+    --paper: #f8fafc;
+    --card-bg: #ffffff;
+    --line: #e2e8f0;
+    --amber: #c77d1e;
+    --amber-light: #fef3c7;
+    --ok: #15803d;
+    --ok-bg: #f0fdf4;
+    --err: #b91c1c;
+    --err-bg: #fef2f2;
+    --text: #0f172a;
+    --text-dim: #64748b;
+    --badge-blue: #0284c7;
+    --badge-blue-bg: #e0f2fe;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--paper);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: 16px 20px;
+    border-bottom: 3px solid var(--amber);
+  }
+
+  header .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  header .brand .mark {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 14px;
+    background: var(--amber);
+    color: var(--navy);
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  header h1 {
+    font-size: 18px;
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+  }
+
+  nav {
+    max-width: 820px;
+    margin: 0 auto;
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--line);
+    background: #fff;
+    padding: 0 10px;
+    overflow-x: auto;
+  }
+
+  nav button {
+    border: none;
+    background: none;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--text-dim);
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    font-family: inherit;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  nav button:hover {
+    color: var(--navy);
+  }
+
+  nav button.active {
+    color: var(--navy);
+    border-bottom-color: var(--amber);
+    font-weight: 700;
+  }
+
+  main {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  h2 {
+    font-size: 20px;
+    margin: 0 0 4px;
+    color: var(--navy);
+    letter-spacing: -0.3px;
+  }
+
+  .sub {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin: 0 0 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 14px 0 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 14.5px;
+    font-family: inherit;
+    background: #fff;
+    color: var(--text);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--steel);
+    box-shadow: 0 0 0 3px rgba(58, 90, 120, 0.15);
+  }
+
+  textarea { resize: vertical; min-height: 72px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 18px;
+    font-family: inherit;
+    transition: background 0.15s ease, transform 0.05s ease;
+  }
+
+  .btn:hover { background: var(--navy-2); }
+  .btn:active { transform: translateY(1px); }
+
+  .btn.secondary {
+    background: #fff;
+    color: var(--navy);
+    border: 1px solid var(--line);
+  }
+
+  .btn.secondary:hover {
+    border-color: var(--steel);
+    background: var(--steel-light);
+  }
+
+  .btn.primary-amber {
+    background: var(--amber);
+    color: #fff;
+  }
+  .btn.primary-amber:hover {
+    background: #b26e1a;
+  }
+
+  .btn.small {
+    padding: 7px 12px;
+    font-size: 13px;
+    margin-top: 0;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .comp-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .comp-row .name {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--navy);
+  }
+
+  .comp-row .meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+    align-items: center;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .badge.ata {
+    background: var(--badge-blue-bg);
+    color: var(--badge-blue);
+    border: 1px solid #bae6fd;
+  }
+
+  .badge.id {
+    background: var(--amber-light);
+    color: var(--amber);
+    border: 1px solid #fde68a;
+  }
+
+  .badge.ac {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+  }
+
+  .badge.worktype {
+    background: #f3e8ff;
+    color: #6b21a8;
+    border: 1px solid #e9d5ff;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--text-dim);
+    font-size: 14.5px;
+    background: #fff;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+  }
+
+  .field-row { display: flex; gap: 12px; }
+  .field-row > div { flex: 1; }
+
+  @media(max-width: 600px) {
+    .field-row { flex-direction: column; gap: 0; }
+  }
+
+  .banner {
+    padding: 12px 14px;
+    border-radius: 6px;
+    font-size: 13.5px;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+
+  .banner.ok { background: var(--ok-bg); color: var(--ok); border: 1px solid #bbf7d0; }
+  .banner.err { background: var(--err-bg); color: var(--err); border: 1px solid #fecaca; }
+
+  .qr-wrap {
+    text-align: center;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 22px;
+    margin-top: 14px;
+  }
+
+  .qr-wrap #qrcode, .qr-wrap #detailQrCode { display: inline-block; }
+
+  .qr-caption {
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .detail-header {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
+    margin-top: 14px;
+    font-size: 13.5px;
+  }
+
+  @media(max-width: 500px) {
+    .meta-grid { grid-template-columns: 1fr; }
+  }
+
+  .meta-grid .k { color: var(--text-dim); font-size: 12.5px; text-transform: uppercase; font-weight: 600; }
+  .meta-grid .v { font-weight: 600; color: var(--text); margin-top: 2px; }
+
+  .record-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+
+  .record-card .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .record-card .date-badge {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--navy);
+  }
+
+  .record-card .desc-box {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 14px;
+    margin-top: 12px;
+    color: var(--text);
+  }
+
+  .search-box {
+    margin-bottom: 16px;
+  }
+
+  .back-link {
+    background: none;
+    border: none;
+    color: var(--steel);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 14px;
+    font-family: inherit;
+    font-weight: 600;
+  }
+
+  /* Scanner viewport */
+  #reader {
+    width: 100%;
+    max-width: 420px;
+    margin: 14px auto 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .scan-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  @media print {
+    header, nav, .no-print, .btn { display: none !important; }
+    body { background: #fff !important; color: #000 !important; }
+    
+    .view { display: none !important; }
+    .view.active { display: block !important; }
+
+    /* When printing QR Label Only */
+    body.print-qr-only .detail-header,
+    body.print-qr-only .record-card,
+    body.print-qr-only h2,
+    body.print-qr-only .sub,
+    body.print-qr-only .back-link,
+    body.print-qr-only header,
+    body.print-qr-only nav,
+    body.print-qr-only #recordList,
+    body.print-qr-only .badge-header-wrap {
+      display: none !important;
+    }
+
+    body.print-qr-only #detailQrWrap, body.print-qr-only #qrResult {
+      border: 2px dashed #000 !important;
+      box-shadow: none !important;
+      padding: 24px !important;
+      margin: 40px auto !important;
+      max-width: 320px !important;
+      text-align: center !important;
+      page-break-inside: avoid;
+    }
+
+    /* Standard full record print mode */
+    body:not(.print-qr-only) .card,
+    body:not(.print-qr-only) .detail-header,
+    body:not(.print-qr-only) .record-card,
+    body:not(.print-qr-only) .qr-wrap {
+      border: 1px solid #ccc !important;
+      box-shadow: none !important;
+      page-break-inside: avoid;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="mark">QR·MRS</span>
+    <h1>Component Maintenance Record System</h1>
+  </div>
+</header>
+
+<nav id="nav" class="no-print">
+  <button data-view="dashboard" class="active">Components</button>
+  <button data-view="register">Register Part</button>
+  <button data-view="addrecord">Log Record</button>
+  <button data-view="scan">Scan QR</button>
+</nav>
+
+<main>
+
+  <!-- DASHBOARD -->
+  <div class="view active" id="view-dashboard">
+    <h2>Registered Components</h2>
+    <p class="sub">Search parts by Name, Serial Number, Component ID, or ATA Chapter.</p>
+    <input class="search-box" id="dashSearch" type="text" placeholder="Search by Component Name, Serial #, ATA Chapter (e.g. 29), ID...">
+    <div id="dashList"></div>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="view" id="view-register">
+    <h2>Register a Component</h2>
+    <p class="sub">Creates a unique component record and generates a permanent, printable QR code sticker.</p>
+    <div id="registerBanner"></div>
+    <form id="registerForm">
+      <label for="regName">Component Name *</label>
+      <input id="regName" type="text" placeholder="e.g. Hydraulic Pump Assembly, Engine Fuel Filter" required>
+
+      <div class="field-row">
+        <div>
+          <label for="regSerial">Serial Number (MSN) *</label>
+          <input id="regSerial" type="text" placeholder="e.g. SN-48213" required>
+        </div>
+        <div>
+          <label for="regAta">ATA Chapter *</label>
+          <input id="regAta" type="text" placeholder="e.g. ATA 29 - Hydraulic Power" required>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label for="regType">Component Type</label>
+          <input id="regType" type="text" placeholder="e.g. Pump, Valve, Sensor, Actuator">
+        </div>
+        <div>
+          <label for="regLocation">Initial Aircraft / Location</label>
+          <input id="regLocation" type="text" placeholder="e.g. 9M-MXX / L Engine">
+        </div>
+      </div>
+
+      <label for="regNotes">Notes / Specifications (Optional)</label>
+      <textarea id="regNotes" placeholder="Part number, overhaul interval requirements, installation position, etc."></textarea>
+
+      <button type="submit" class="btn">Register &amp; Generate QR Code</button>
+    </form>
+
+    <div class="qr-wrap no-print" id="qrResult" style="display:none;">
+      <div id="qrcode"></div>
+      <div class="qr-caption" id="qrCaption"></div>
+      <div style="margin-top:14px; display: flex; justify-content: center; gap: 10px;">
+        <button class="btn small secondary" onclick="printQrOnly()">Print QR Label Only</button>
+        <button class="btn small primary-amber" id="viewNewComp">View Component Page</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD RECORD -->
+  <div class="view" id="view-addrecord">
+    <h2>Add Maintenance Record</h2>
+    <p class="sub">Log certified maintenance actions, inspections, or replacements against a component.</p>
+    <div id="addRecordBanner"></div>
+
+    <div id="lookupSection">
+      <label for="lookupInput">Search Component (ID, Serial #, ATA Chapter, Name)</label>
+      <div style="display:flex; gap:8px;">
+        <input id="lookupInput" type="text" placeholder="e.g. AC-0001, SN-48213, or ATA 29">
+        <button class="btn small secondary" id="lookupBtn" style="margin-top:0;">Find</button>
+      </div>
+      <div id="lookupResult" style="margin-top:10px;"></div>
+    </div>
+
+    <form id="recordForm" style="display:none; margin-top: 16px;">
+      <input type="hidden" id="recordCompId">
+      
+      <div class="card" style="background: var(--steel-light); border-color: var(--steel);">
+        <strong id="recordTargetTitle" style="color: var(--navy);"></strong>
+        <div id="recordTargetSub" style="font-size: 13px; color: var(--text-dim);"></div>
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label for="recDate">Date of Work *</label>
+          <input id="recDate" type="date" required>
+        </div>
+        <div>
+          <label for="recWorkType">Work Type *</label>
+          <select id="recWorkType" required>
+            <option value="Inspection">Inspection / Check</option>
+            <option value="Overhaul">Overhaul / Bench Test</option>
+            <option value="Repair">Repair / Seal Swap</option>
+            <option value="Replacement">Replacement / Swap</option>
+            <option value="Servicing">Servicing / Calibration</option>
+            <option value="Modification">Modification / Bulletin</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label for="recAircraftReg">Aircraft Registration No. *</label>
+          <input id="recAircraftReg" type="text" placeholder="e.g. 9M-MXX" required>
+        </div>
+        <div>
+          <label for="recMRO">MRO / Maintenance Station *</label>
+          <input id="recMRO" type="text" placeholder="e.g. AeroTech Engineering MRO" required>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label for="recCertifier">Certifying Staff Name *</label>
+          <input id="recCertifier" type="text" placeholder="e.g. Engr. R. Riya" required>
+        </div>
+        <div>
+          <label for="recLicence">Licence / Auth Number *</label>
+          <input id="recLicence" type="text" placeholder="e.g. AML-88421 / AUTH-09" required>
+        </div>
+      </div>
+
+      <label for="recDesc">Maintenance Description / Action Taken *</label>
+      <textarea id="recDesc" placeholder="Describe work performed, pressure test results, operational check status, replaced parts, etc." required></textarea>
+
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button type="submit" class="btn">Save Maintenance Record</button>
+        <button type="button" class="btn secondary" id="cancelRecordBtn">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- SCAN -->
+  <div class="view" id="view-scan">
+    <h2>Scan Component QR Code</h2>
+    <p class="sub">Use device camera or upload a saved photo of a component's QR code sticker.</p>
+    <div id="scanBanner"></div>
+
+    <div class="scan-controls">
+      <div id="cameraSelectWrap" style="display:none;">
+        <label for="cameraSelect">Select Camera</label>
+        <select id="cameraSelect"></select>
+      </div>
+
+      <div id="scanStartWrap" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn" id="startScanBtn">Start Camera Scan</button>
+      </div>
+    </div>
+
+    <!-- Scanner viewport -->
+    <div id="reader"></div>
+
+    <button class="btn small secondary no-print" id="stopScanBtn" style="display:none; margin-top:12px;">Stop Scanner</button>
+
+    <!-- Fallback image scan option -->
+    <div class="card" style="margin-top:20px; text-align:center;">
+      <span style="font-size:13.5px; color:var(--text-dim);">Alternatively, choose a photo of a QR code:</span>
+      <input type="file" id="qrFileInput" accept="image/*" style="margin-top:8px;">
+    </div>
+
+    <div id="scanResult" style="margin-top:18px;"></div>
+  </div>
+
+  <!-- COMPONENT DETAIL -->
+  <div class="view" id="view-detail">
+    <button class="back-link no-print" id="backFromDetail">&larr; Back to Components List</button>
+    <div id="detailContent"></div>
+  </div>
+
+</main>
+
+<script>
+const DB_KEY = "qrmrs_data_v3";
+
+// Expanded sample dataset with realistic aviation components & detailed maintenance logs
+const sampleData = {
+  nextId: 5,
+  components: [
+    {
+      id: "AC-0001",
+      name: "Main Hydraulic Pump Assembly",
+      serial: "SN-HYD-8821",
+      ata: "ATA 29 - Hydraulic Power",
+      type: "Hydraulic Pump",
+      location: "9M-MXX / Left Engine (#1)",
+      notes: "Installed on Left Engine (#1 Position). Max pressure 3000 PSI. Overhaul interval: 2000 Flight Hours.",
+      dateRegistered: "2025-01-10T09:00:00.000Z"
+    },
+    {
+      id: "AC-0002",
+      name: "Nose Landing Gear Actuator",
+      serial: "SN-NLG-4409",
+      ata: "ATA 32 - Landing Gear",
+      type: "Hydraulic Actuator",
+      location: "9M-MXY / Nose Gear Bay",
+      notes: "Overhauled during 2024 C-Check. Dual Teflon seal configuration.",
+      dateRegistered: "2025-02-01T14:20:00.000Z"
+    },
+    {
+      id: "AC-0003",
+      name: "VOR / ILS Navigation Receiver Unit",
+      serial: "SN-NAV-1205",
+      ata: "ATA 34 - Navigation",
+      type: "Avionics Receiver",
+      location: "9M-MXX / Avionics Bay Rack 2",
+      notes: "Software Version 4.2.1 installed. Calibrated to ICAO Annex 10 standards.",
+      dateRegistered: "2025-02-15T10:15:00.000Z"
+    },
+    {
+      id: "AC-0004",
+      name: "APU Fuel Control Unit",
+      serial: "SN-FCU-9931",
+      ata: "ATA 49 - Airborne Auxiliary Power",
+      type: "Fuel Controller",
+      location: "9M-MXZ / Tail Cone APU",
+      notes: "Bench tested for high-altitude restart capability.",
+      dateRegistered: "2025-03-01T11:00:00.000Z"
+    }
+  ],
+  records: [
+    {
+      id: "REC-101",
+      componentId: "AC-0001",
+      date: "2026-01-15",
+      workType: "Overhaul",
+      aircraftReg: "9M-MXX",
+      mro: "AeroTech Asia MRO",
+      certifier: "Engr. Marcus Vance",
+      licence: "CAAM/AML/88301",
+      description: "Replaced internal seal kit and shaft coupling. Bench pressure tested at 3000 PSI for 30 minutes with zero leakage."
+    },
+    {
+      id: "REC-102",
+      componentId: "AC-0001",
+      date: "2026-03-10",
+      workType: "Inspection",
+      aircraftReg: "9M-MXX",
+      mro: "AeroTech Asia MRO",
+      certifier: "Engr. Sarah Jenkins",
+      licence: "EASA.66.A4920",
+      description: "500-flight-hour operational inspection completed. Fluid lines checked, secure mounting verified."
+    },
+    {
+      id: "REC-103",
+      componentId: "AC-0002",
+      date: "2026-02-20",
+      workType: "Servicing",
+      aircraftReg: "9M-MXY",
+      mro: "Global Aviation Services",
+      certifier: "Engr. David Chen",
+      licence: "FAA/A&P/399104",
+      description: "Hydraulic seals lubricated and extension/retraction timing cycle verified across 5 consecutive test cycles."
+    },
+    {
+      id: "REC-104",
+      componentId: "AC-0003",
+      date: "2026-02-28",
+      workType: "Modification",
+      aircraftReg: "9M-MXX",
+      mro: "Avionics Tech Solutions",
+      certifier: "Engr. A. Rahman",
+      licence: "CAAM/AML/77120",
+      description: "Updated firmware to v4.2.1 as per Service Bulletin SB-NAV-34-09. Frequency alignment checked within +/- 0.001 MHz."
+    },
+    {
+      id: "REC-105",
+      componentId: "AC-0004",
+      date: "2026-03-15",
+      workType: "Repair",
+      aircraftReg: "9M-MXZ",
+      mro: "AeroTech Asia MRO",
+      certifier: "Engr. Marcus Vance",
+      licence: "CAAM/AML/88301",
+      description: "Replaced fuel metering valve gasket following minor seepage observation during transit check. Operational leak check satisfactory."
+    }
+  ]
+};
+
+function loadData() {
+  const raw = localStorage.getItem(DB_KEY);
+  if (!raw) {
+    localStorage.setItem(DB_KEY, JSON.stringify(sampleData));
+    return sampleData;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch(e) {
+    return sampleData;
+  }
+}
+
+function saveData(data) {
+  localStorage.setItem(DB_KEY, JSON.stringify(data));
+}
+
+let db = loadData();
+
+function genComponentId() {
+  const n = db.nextId++;
+  return "AC-" + String(n).padStart(4, "0");
+}
+
+function findComponents(query) {
+  query = (query || "").trim().toLowerCase();
+  if (!query) return db.components;
+  return db.components.filter(c =>
+    (c.id && c.id.toLowerCase().includes(query)) ||
+    (c.name && c.name.toLowerCase().includes(query)) ||
+    (c.serial && c.serial.toLowerCase().includes(query)) ||
+    (c.ata && c.ata.toLowerCase().includes(query)) ||
+    (c.type && c.type.toLowerCase().includes(query))
+  );
+}
+
+function findSingleComponent(query) {
+  query = (query || "").trim().toLowerCase();
+  return db.components.find(c =>
+    c.id.toLowerCase() === query ||
+    c.serial.toLowerCase() === query
+  );
+}
+
+function getRecordsForComponent(compId) {
+  return db.records
+    .filter(r => r.componentId === compId)
+    .sort((a, b) => parseLocalDateStr(b.date) - parseLocalDateStr(a.date));
+}
+
+function parseLocalDateStr(s) {
+  if (!s) return new Date();
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function todayLocalStr() {
+  const t = new Date();
+  return t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
+}
+
+const navButtons = document.querySelectorAll("#nav button");
+const views = document.querySelectorAll(".view");
+
+function showView(name) {
+  if (name !== "scan") stopScanner();
+  views.forEach(v => v.classList.remove("active"));
+  document.getElementById("view-" + name).classList.add("active");
+  navButtons.forEach(b => b.classList.toggle("active", b.dataset.view === name));
+  
+  if (name === "dashboard") renderDashboard();
+  if (name === "scan") prepareScannerInterface();
+}
+
+navButtons.forEach(btn => {
+  btn.addEventListener("click", () => showView(btn.dataset.view));
+});
+
+document.getElementById("backFromDetail").addEventListener("click", () => {
+  history.replaceState(null, "", window.location.pathname);
+  showView("dashboard");
+});
+
+function renderDashboard(filterText) {
+  const list = document.getElementById("dashList");
+  filterText = filterText || document.getElementById("dashSearch").value;
+  const comps = findComponents(filterText);
+
+  if (comps.length === 0) {
+    list.innerHTML = `<div class="empty">${db.components.length === 0
+      ? "No components registered yet. Click <strong>Register Part</strong> to add the first component."
+      : "No components match your search query."}</div>`;
+    return;
+  }
+
+  list.innerHTML = comps.map(c => {
+    const recCount = db.records.filter(r => r.componentId === c.id).length;
+    return `
+      <div class="card comp-row" style="cursor:pointer" data-id="${c.id}">
+        <div>
+          <div class="name">${escapeHtml(c.name)}</div>
+          <div class="meta-tags">
+            <span class="badge id">${c.id}</span>
+            <span class="badge ata">${escapeHtml(c.ata || "ATA Unspecified")}</span>
+            <span class="badge ac">SN: ${escapeHtml(c.serial)}</span>
+            <span style="font-size:12px; color:var(--text-dim); margin-left:4px;">${recCount} record${recCount === 1 ? "" : "s"}</span>
+          </div>
+        </div>
+        <button class="btn small secondary" data-open="${c.id}">View</button>
+      </div>`;
+  }).join("");
+
+  list.querySelectorAll("[data-id]").forEach(el => {
+    el.addEventListener("click", (e) => openComponent(el.dataset.id));
+  });
+}
+
+document.getElementById("dashSearch").addEventListener("input", (e) => {
+  renderDashboard(e.target.value);
+});
+
+document.getElementById("registerForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = document.getElementById("regName").value.trim();
+  const serial = document.getElementById("regSerial").value.trim();
+  const ata = document.getElementById("regAta").value.trim();
+  const type = document.getElementById("regType").value.trim();
+  const location = document.getElementById("regLocation").value.trim();
+  const notes = document.getElementById("regNotes").value.trim();
+  const banner = document.getElementById("registerBanner");
+
+  if (findSingleComponent(serial)) {
+    banner.innerHTML = `<div class="banner err">A component with Serial Number "${escapeHtml(serial)}" is already registered.</div>`;
+    return;
+  }
+
+  const id = genComponentId();
+  db.components.push({
+    id, name, serial, ata, type, location, notes,
+    dateRegistered: new Date().toISOString()
+  });
+  saveData(db);
+
+  banner.innerHTML = `<div class="banner ok">Component <strong>${id}</strong> successfully registered. QR code generated below.</div>`;
+  document.getElementById("registerForm").reset();
+
+  const qrDiv = document.getElementById("qrcode");
+  qrDiv.innerHTML = "";
+  const url = componentUrl(id);
+
+  if (typeof QRCode !== "undefined") {
+    new QRCode(qrDiv, { text: url, width: 180, height: 180, colorDark: "#0f2233", colorLight: "#ffffff" });
+  } else {
+    qrDiv.innerHTML = `<span style="color:var(--err)">QR code library offline.</span>`;
+  }
+
+  document.getElementById("qrCaption").textContent = id + "  ·  " + name + "  ·  " + ata;
+  document.getElementById("qrResult").style.display = "block";
+  document.getElementById("viewNewComp").onclick = () => openComponent(id);
+});
+
+function componentUrl(id) {
+  const base = window.location.href.split("?")[0];
+  return base + "?id=" + encodeURIComponent(id);
+}
+
+document.getElementById("lookupBtn").addEventListener("click", doLookup);
+document.getElementById("lookupInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); doLookup(); }
+});
+
+function doLookup() {
+  const q = document.getElementById("lookupInput").value;
+  const result = document.getElementById("lookupResult");
+  const form = document.getElementById("recordForm");
+  const banner = document.getElementById("addRecordBanner");
+  banner.innerHTML = "";
+
+  const comp = findSingleComponent(q) || findComponents(q)[0];
+  if (!comp) {
+    result.innerHTML = "";
+    form.style.display = "none";
+    if (q.trim()) banner.innerHTML = `<div class="banner err">No component found matching "${escapeHtml(q)}".</div>`;
+    return;
+  }
+
+  selectComponentForRecord(comp);
+}
+
+function selectComponentForRecord(comp) {
+  document.getElementById("recordCompId").value = comp.id;
+  document.getElementById("recordTargetTitle").textContent = comp.name + " (" + comp.id + ")";
+  document.getElementById("recordTargetSub").textContent = "Serial: " + comp.serial + "  |  " + (comp.ata || "No ATA Chapter");
+  document.getElementById("recDate").value = todayLocalStr();
+  
+  document.getElementById("lookupResult").innerHTML = "";
+  document.getElementById("recordForm").style.display = "block";
+}
+
+document.getElementById("cancelRecordBtn").addEventListener("click", () => {
+  document.getElementById("recordForm").reset();
+  document.getElementById("recordForm").style.display = "none";
+});
+
+document.getElementById("recordForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const compId = document.getElementById("recordCompId").value;
+  
+  const recordObj = {
+    id: "REC-" + Date.now().toString().slice(-5),
+    componentId: compId,
+    date: document.getElementById("recDate").value,
+    workType: document.getElementById("recWorkType").value,
+    aircraftReg: document.getElementById("recAircraftReg").value.trim(),
+    mro: document.getElementById("recMRO").value.trim(),
+    certifier: document.getElementById("recCertifier").value.trim(),
+    licence: document.getElementById("recLicence").value.trim(),
+    description: document.getElementById("recDesc").value.trim()
+  };
+
+  db.records.push(recordObj);
+  saveData(db);
+
+  document.getElementById("addRecordBanner").innerHTML = `<div class="banner ok">Maintenance record logged successfully for component ${compId}.</div>`;
+  document.getElementById("recordForm").reset();
+  document.getElementById("recordForm").style.display = "none";
+  document.getElementById("lookupInput").value = "";
+  
+  setTimeout(() => openComponent(compId), 800);
+});
+
+function openComponent(id) {
+  const comp = db.components.find(c => c.id === id);
+  const content = document.getElementById("detailContent");
+
+  if (!comp) {
+    content.innerHTML = `<div class="empty">Component ID "${escapeHtml(id)}" not found.</div>`;
+    showView("detail");
+    return;
+  }
+
+  const records = getRecordsForComponent(id);
+
+  content.innerHTML = `
+    <!-- Section 1: Component Header Details -->
+    <div class="detail-header">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+        <div class="badge-header-wrap">
+          <span class="badge id">${comp.id}</span>
+          <span class="badge ata">${escapeHtml(comp.ata || "ATA Unspecified")}</span>
+          <h2 style="margin-top:6px; font-size:22px;">${escapeHtml(comp.name)}</h2>
+        </div>
+        <!-- Direct button to add record from Component Page -->
+        <button class="btn primary-amber small no-print" id="directAddRecBtn">
+          + Log Maintenance Record
+        </button>
+      </div>
+
+      <div class="meta-grid">
+        <div>
+          <div class="k">Serial Number (MSN)</div>
+          <div class="v">${escapeHtml(comp.serial)}</div>
+        </div>
+        <div>
+          <div class="k">Component Type</div>
+          <div class="v">${escapeHtml(comp.type || "—")}</div>
+        </div>
+        <div>
+          <div class="k">Initial / Current Location</div>
+          <div class="v">${escapeHtml(comp.location || "—")}</div>
+        </div>
+        <div>
+          <div class="k">Date Registered</div>
+          <div class="v">${new Date(comp.dateRegistered).toLocaleDateString()}</div>
+        </div>
+      </div>
+      ${comp.notes ? `<div style="margin-top:14px; font-size:13.5px; color:var(--text-dim); background:var(--paper); padding:10px; border-radius:6px; border:1px solid var(--line);">${escapeHtml(comp.notes)}</div>` : ""}
+    </div>
+
+    <!-- Section 2: QR Code Sticker Card -->
+    <div class="qr-wrap" id="detailQrWrap">
+      <div id="detailQrCode"></div>
+      <div class="qr-caption">${comp.id} &middot; ${escapeHtml(comp.name)} &middot; ${escapeHtml(comp.ata || "")}</div>
+      <div style="margin-top:14px; display:flex; justify-content:center; gap:10px;" class="no-print">
+        <button class="btn small secondary" onclick="printQrOnly()">Print QR Label Only</button>
+        <button class="btn small secondary" onclick="printFullRecord()">Print Full Record &amp; History</button>
+      </div>
+    </div>
+
+    <!-- Section 3: Organized Maintenance History Logbook -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:28px; margin-bottom:12px;">
+      <h2 style="font-size:18px; margin:0;">Maintenance History Logbook</h2>
+      <span class="badge ac">${records.length} total entry${records.length === 1 ? "" : "ies"}</span>
+    </div>
+
+    <div id="recordList"></div>
+  `;
+
+  // QR rendering
+  const qrTarget = document.getElementById("detailQrCode");
+  if (typeof QRCode !== "undefined") {
+    new QRCode(qrTarget, { text: componentUrl(comp.id), width: 160, height: 160, colorDark: "#0f2233", colorLight: "#ffffff" });
+  }
+
+  // Bind direct Add Record button
+  document.getElementById("directAddRecBtn").addEventListener("click", () => {
+    showView("addrecord");
+    selectComponentForRecord(comp);
+  });
+
+  // Render Organized History Cards
+  const list = document.getElementById("recordList");
+  if (records.length === 0) {
+    list.innerHTML = `<div class="empty">No maintenance records logged yet for this component.</div>`;
+  } else {
+    list.innerHTML = records.map(r => `
+      <div class="record-card">
+        <div class="header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="badge worktype">${escapeHtml(r.workType || "Maintenance")}</span>
+            <span class="date-badge">Date: ${parseLocalDateStr(r.date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
+          </div>
+          <div>
+            <span class="badge ac">Aircraft: <strong>${escapeHtml(r.aircraftReg || "N/A")}</strong></span>
+          </div>
+        </div>
+
+        <div class="meta-grid" style="margin-top:8px;">
+          <div>
+            <div class="k">MRO / Facility</div>
+            <div class="v">${escapeHtml(r.mro || "—")}</div>
+          </div>
+          <div>
+            <div class="k">Certifying Staff</div>
+            <div class="v">${escapeHtml(r.certifier || "—")}</div>
+          </div>
+          <div>
+            <div class="k">Licence / Auth No.</div>
+            <div class="v">${escapeHtml(r.licence || "—")}</div>
+          </div>
+          <div>
+            <div class="k">Record ID</div>
+            <div class="v" style="font-family:var(--mono); font-size:12px;">${escapeHtml(r.id || "—")}</div>
+          </div>
+        </div>
+
+        <div class="desc-box">
+          <strong style="font-size:12.5px; color:var(--text-dim); text-transform:uppercase; display:block; margin-bottom:4px;">Work Action Description:</strong>
+          ${escapeHtml(r.description)}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  showView("detail");
+}
+
+function printQrOnly() {
+  document.body.classList.add("print-qr-only");
+  window.print();
+}
+
+function printFullRecord() {
+  document.body.classList.remove("print-qr-only");
+  window.print();
+}
+
+window.addEventListener("afterprint", () => {
+  document.body.classList.remove("print-qr-only");
+});
+
+let html5QrCode = null;
+
+async function prepareScannerInterface() {
+  const banner = document.getElementById("scanBanner");
+  banner.innerHTML = "";
+
+  if (typeof Html5Qrcode === "undefined") {
+    banner.innerHTML = `<div class="banner err">Scanner engine failed to load. Check internet connection and reload.</div>`;
+    return;
+  }
+
+  if (window.location.protocol !== "https:" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    banner.innerHTML = `<div class="banner err">Note: Camera access requires HTTPS or localhost in modern browsers. If camera is blocked, use the file image scanner below.</div>`;
+  }
+
+  try {
+    const cameras = await Html5Qrcode.getCameras();
+    const select = document.getElementById("cameraSelect");
+    const selectWrap = document.getElementById("cameraSelectWrap");
+    select.innerHTML = "";
+
+    if (cameras && cameras.length > 0) {
+      selectWrap.style.display = "block";
+      cameras.forEach((cam, idx) => {
+        const opt = document.createElement("option");
+        opt.value = cam.id;
+        opt.text = cam.label || `Camera ${idx + 1}`;
+        select.appendChild(opt);
+      });
+
+      const rear = cameras.find(c => c.label.toLowerCase().includes("back") || c.label.toLowerCase().includes("rear") || c.label.toLowerCase().includes("environment"));
+      if (rear) select.value = rear.id;
+    }
+  } catch(e) { }
+}
+
+document.getElementById("startScanBtn").addEventListener("click", startScanner);
+document.getElementById("stopScanBtn").addEventListener("click", stopScanner);
+
+async function startScanner() {
+  const banner = document.getElementById("scanBanner");
+  banner.innerHTML = "";
+  
+  if (!html5QrCode) {
+    html5QrCode = new Html5Qrcode("reader");
+  }
+
+  const cameraSelect = document.getElementById("cameraSelect");
+  let cameraIdOrConfig = { facingMode: "environment" };
+
+  if (cameraSelect && cameraSelect.value) {
+    cameraIdOrConfig = cameraSelect.value;
+  }
+
+  document.getElementById("scanStartWrap").style.display = "none";
+  document.getElementById("stopScanBtn").style.display = "inline-block";
+
+  try {
+    await html5QrCode.start(
+      cameraIdOrConfig,
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 }
+      },
+      onScanSuccess,
+      onScanFailure
+    );
+  } catch (err) {
+    console.error("Camera error:", err);
+    banner.innerHTML = `<div class="banner err">Could not launch camera: ${escapeHtml(err.message || err)}. Please ensure camera permission is allowed in your browser settings.</div>`;
+    stopScanner();
+  }
+}
+
+async function stopScanner() {
+  document.getElementById("scanStartWrap").style.display = "flex";
+  document.getElementById("stopScanBtn").style.display = "none";
+  if (html5QrCode && html5QrCode.isScanning) {
+    try {
+      await html5QrCode.stop();
+    } catch(e) { }
+  }
+}
+
+function onScanFailure(error) { }
+
+function onScanSuccess(decodedText) {
+  stopScanner();
+
+  const query = extractComponentQuery(decodedText);
+  const comp = findSingleComponent(query) || findComponents(query)[0];
+  const resultDiv = document.getElementById("scanResult");
+
+  if (!comp) {
+    resultDiv.innerHTML = `
+      <div class="banner err">Scanned QR Code (${escapeHtml(decodedText)}) does not match any registered component.</div>
+      <button class="btn small secondary" id="scanAgainBtn">Scan Again</button>`;
+  } else {
+    resultDiv.innerHTML = `
+      <div class="banner ok">Component Identified!</div>
+      <div class="card">
+        <div class="name">${escapeHtml(comp.name)}</div>
+        <div class="meta-tags" style="margin-top:6px;">
+          <span class="badge id">${comp.id}</span>
+          <span class="badge ata">${escapeHtml(comp.ata || "ATA Unspecified")}</span>
+          <span class="badge ac">SN: ${escapeHtml(comp.serial)}</span>
+        </div>
+        <div style="margin-top:14px; display:flex; gap:8px;">
+          <button class="btn small" id="scanOpenBtn">View Full History</button>
+          <button class="btn small secondary" id="scanAgainBtn">Scan Again</button>
+        </div>
+      </div>`;
+    document.getElementById("scanOpenBtn").addEventListener("click", () => openComponent(comp.id));
+  }
+
+  document.getElementById("scanAgainBtn").addEventListener("click", startScanner);
+}
+
+document.getElementById("qrFileInput").addEventListener("change", e => {
+  if (e.target.files.length == 0) return;
+  const imageFile = e.target.files[0];
+  
+  if (!html5QrCode) {
+    html5QrCode = new Html5Qrcode("reader");
+  }
+
+  html5QrCode.scanFile(imageFile, true)
+    .then(decodedText => onScanSuccess(decodedText))
+    .catch(err => {
+      document.getElementById("scanBanner").innerHTML = `<div class="banner err">Failed to read QR code from image: ${escapeHtml(err)}</div>`;
+    });
+});
+
+function extractComponentQuery(decodedText) {
+  try {
+    const url = new URL(decodedText);
+    const idParam = url.searchParams.get("id");
+    if (idParam) return idParam;
+  } catch(e) { }
+  return decodedText;
+}
+
+function escapeHtml(str) {
+  return String(str || "").replace(/[&<>"']/g, m => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[m]));
+}
+
+(function boot() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  if (id) {
+    openComponent(id);
+  } else {
+    renderDashboard();
+  }
+})();
+</script>
+
+</body>
+</html>
